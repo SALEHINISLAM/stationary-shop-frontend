@@ -3,10 +3,12 @@ import { redirect } from "react-router-dom";
 import { store } from "../redux/store";
 import { TUserRole } from "../types/users";
 import { toast } from "sonner";
+import { waitForRehydration } from "../utilis/waitForRehydration";
 /**
  * Base protection - just checks authentication
  */
 export async function authLoader() {
+  await waitForRehydration()
   const { token } = store.getState().auth;
   return token ? null : redirect('/login?from=' + encodeURIComponent(window.location.pathname));
 }
@@ -15,6 +17,9 @@ export async function authLoader() {
  * Role-based protection
  */
 export async function roleLoader(allowedRoles: TUserRole[]) {
+
+  await waitForRehydration()
+
   const { user, token } = store.getState().auth;
   
   if (!token) {
@@ -33,6 +38,9 @@ export async function roleLoader(allowedRoles: TUserRole[]) {
  * Automatic role-based redirection
  */
 export async function roleRedirectLoader() {
+
+  await waitForRehydration()
+
   const { user, token } = store.getState().auth;
   
   if (!token) {
@@ -48,4 +56,25 @@ export async function roleRedirectLoader() {
     default:
       return redirect('/login');
   }
+}
+
+export async function redirectIfLoggedInLoader() {
+  await waitForRehydration();
+
+  const { token, user } = store.getState().auth;
+
+  if (token && user?.role) {
+    switch (user.role) {
+      case 'admin':
+        return redirect('/dashboard/admin');
+      case 'superAdmin':
+        return redirect('/dashboard/admin');
+      case 'user':
+        return redirect('/dashboard/users');
+      default:
+        return redirect('/dashboard');
+    }
+  }
+
+  return null; // allow to access login page if not logged in
 }
