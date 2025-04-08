@@ -8,7 +8,7 @@ const authApi = baseApi.injectEndpoints({
         method: 'POST',
         body: userInfo,
       }),
-      invalidatesTags:['auth']
+      //invalidatesTags:['auth']
     }),
   }),
 });

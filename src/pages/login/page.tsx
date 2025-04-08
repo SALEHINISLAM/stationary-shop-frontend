@@ -1,7 +1,5 @@
-// src/pages/Login/Login.tsx
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
 import { toast } from 'sonner';
 import {
   Box,
@@ -18,6 +16,10 @@ import {
 import { LockOutlined } from '@mui/icons-material';
 import { useLoginMutation } from '../../redux/features/auth/authApi';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import { TErrorResponse } from '../../types/errorTypes';
+import { useAppDispatch } from '../../redux/hooks';
+import { setUser } from '../../redux/features/auth/authSlice';
+import { jwtDecode } from "jwt-decode";
 
 type LoginFormData = {
   email: string;
@@ -31,35 +33,49 @@ const Login = () => {
     formState: { errors },
   } = useForm<LoginFormData>();
 
-  const [login, { isLoading, isSuccess, error }] = useLoginMutation();
+  const [login, { isLoading }] = useLoginMutation();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const onSubmit = async (data: LoginFormData) => {
-    const toastId=toast.loading("logging in...")
+    const toastId = toast.loading("Logging in...");
+    
     try {
-      await login(data).unwrap();
-      toast.success("Logged in successfully.",{id:toastId,icon:<ThumbUpIcon/>,duration:500})
+      const res=await login(data).unwrap();
+      console.log(res);
+      if (res.success) {
+        const token = res.data.accessToken;
+        const decodeUser=jwtDecode(token)
+        console.log(decodeUser);
+        dispatch(setUser({token, user:decodeUser}))
+        //save to redux
+        toast.success("Logged in successfully!", { 
+          id: toastId,
+          icon: <ThumbUpIcon />,
+          duration: 1000,
+        });
+        await navigate('/dashboard');
+      }
+      else {
+        toast.error(res.message||"Login Failed", { id: toastId });
+      }
     } catch (err) {
-        console.log(err);
-      // Error handling is now done in the useEffect below
+      const apiError = err as TErrorResponse;
+      const errMessage = apiError.message || "Login failed, please try again";
+      
+      toast.error(errMessage, {
+        id: toastId,
+        duration: 5000,
+        action: {
+          label: 'Retry',
+          onClick: () => window.location.reload()
+        }
+      });
     }
-  }
-
-  useEffect(() => {
-    if (isSuccess) {
-      toast.success('Login successful!');
-      navigate('/dashboard');
-    }
-  }, [isSuccess, navigate]);
-
-  useEffect(() => {
-    if (error) {
-      toast.error('Login failed. Please check your credentials.');
-    }
-  }, [error]);
+  };
 
   return (
-    <Container component="main" maxWidth="xs">
+    <Container component="main" maxWidth="sm">
       <CssBaseline />
       <Paper
         elevation={3}
@@ -75,7 +91,7 @@ const Login = () => {
           <LockOutlined />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Sign in
+          Sign In
         </Typography>
         <Box
           component="form"
