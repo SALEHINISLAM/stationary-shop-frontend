@@ -1,0 +1,1 @@
+export const catagories=["Writing" , "Office Supplies" , "Art Supplies" , "Educational" , "Technology"]
