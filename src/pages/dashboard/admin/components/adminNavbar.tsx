@@ -5,7 +5,6 @@ import {
   ManageAccounts,
   Menu,
   People,
-  Update,
 } from "@mui/icons-material";
 import {
   Box,
@@ -34,11 +33,6 @@ export default function AdminNavbar() {
       name: "Add Product",
       path: "/dashboard/admin/add-product",
       icon: <Add />,
-    },
-    {
-      name: "Update Product",
-      path: "/dashboard/admin/update-product",
-      icon: <Update />,
     },
     {
       name: "Delete Product",

@@ -14,8 +14,12 @@ import {
   Checkbox,
   FormControlLabel,
   SelectChangeEvent,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
-import { useGetAllProductsQuery } from "../../../../redux/features/products/productApis";
+import { useDeleteProductMutation, useGetAllProductsQuery } from "../../../../redux/features/products/productApis";
 import LoadingScreen from "../../../../components/loading";
 import { Link } from "react-router-dom";
 import {
@@ -42,13 +46,14 @@ export default function AllProducts() {
   const [minPrice, setMinPrice] = useState<number | undefined>(undefined);
   const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
   const [categories, setCategories] = useState<string[]>([]);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [productIdToDelete, setProductIdToDelete] = useState<string | null>(null);
 
-  
   const dispatch = useAppDispatch();
   // Determine if we should skip the API call
   const persistedProducts = useAppSelector((state) => state.product.products);
-  
-  const { data, isLoading, isError } = useGetAllProductsQuery(
+
+  const { data, isLoading, isError,refetch } = useGetAllProductsQuery(
     {
       page,
       limit,
@@ -61,6 +66,7 @@ export default function AllProducts() {
     },
     { refetchOnMountOrArgChange: true }
   );
+  const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
   useEffect(() => {
     if (data?.data?.result) {
       dispatch(setProducts(data.data.result));
@@ -102,6 +108,30 @@ export default function AllProducts() {
     setPage(1);
   };
 
+  const handleDeleteProduct = async (id: string) => {
+    console.log(id);
+    setProductIdToDelete(id); // Set the product ID to delete
+    setOpenDeleteModal(true); // Open the confirmation modal
+  };
+
+  const confirmDelete = async () => {
+    if (productIdToDelete) {
+      try {
+        await deleteProduct(productIdToDelete).unwrap(); // Call the delete API
+        setOpenDeleteModal(false); // Close the modal
+        setProductIdToDelete(null); // Clear the ID
+        refetch(); // Refetch the product list to update UI
+      } catch (error) {
+        console.error("Failed to delete product:", error);
+        // Optionally, show an error message to the user
+      }
+    }
+  };
+  const cancelDelete = () => {
+    setOpenDeleteModal(false);
+    setProductIdToDelete(null);
+  };
+
   if (isLoading) return <LoadingScreen />;
   if (isError)
     return (
@@ -113,7 +143,7 @@ export default function AllProducts() {
   const products: Product[] =
     persistedProducts.length > 0 ? persistedProducts : data?.data?.result || [];
   const totalPages = data?.data?.totalPages || 1;
-  
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -299,10 +329,20 @@ export default function AllProducts() {
                     className="bg-blue-600 hover:bg-blue-700 w-full"
                     sx={{ mb: 2 }}
                   >
-                    Update Info
+                    Update Product
                   </Button>
                 </Link>
               </div>
+              <Button
+                variant="contained"
+                className="bg-red-600 w-full hover:bg-blue-700"
+                sx={{ mb: 2 }}
+                color="error"
+                onClick={() => handleDeleteProduct(product._id)}
+                disabled={isDeleting}
+              >
+                {isDeleting && productIdToDelete === product._id ? "Deleting..." : "Delete Product"}
+              </Button>
             </Card>
           ))}
         </div>
@@ -321,6 +361,26 @@ export default function AllProducts() {
           />
         </div>
       )}
+      <Dialog
+        open={openDeleteModal}
+        onClose={cancelDelete}
+        aria-labelledby="delete-dialog-title"
+      >
+        <DialogTitle id="delete-dialog-title">Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this product? This action is permanent and cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelDelete} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={confirmDelete} color="error" variant="contained" disabled={isDeleting}>
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

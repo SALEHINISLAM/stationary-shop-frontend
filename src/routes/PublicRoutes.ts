@@ -72,7 +72,7 @@ export const router = createBrowserRouter([
                         HydrateFallback: LoadingScreen
                     },
                     {
-                        path: 'update-product',
+                        path: 'update-product/:id',
                         loader: () => roleLoader(['admin', 'superAdmin']),
                         Component: UpdateProduct
                     },
