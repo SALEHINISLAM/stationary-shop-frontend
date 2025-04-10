@@ -5,7 +5,7 @@ const LoadingScreen = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#fdfbfb] to-[#ebedee] text-gray-800 animate-fade-in px-4">
       {/* Stylized Logo Title */}
       <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-wide mb-4 text-indigo-600 font-serif">
-        Pen & Paper
+        Boi Khata
       </h1>
 
       {/* Tagline */}

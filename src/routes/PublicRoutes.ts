@@ -13,20 +13,21 @@ import UpdateProduct from "../pages/dashboard/admin/updateProduct/page.tsx";
 import DeleteProduct from "../pages/dashboard/admin/deleteProduct/page.tsx";
 import ManageUsers from "../pages/dashboard/admin/manageUsers/page.tsx";
 import ManageOrders from "../pages/dashboard/admin/manageOrders/page.tsx";
+import GetSingleProduct from "../pages/dashboard/admin/allProducts/getSingleProduct/page.tsx";
 
 export const router = createBrowserRouter([
     {
         path: '/',
         Component: App,
-        HydrateFallback:LoadingScreen
+        HydrateFallback: LoadingScreen
     },
     {
         path: "/login",
         Component: Login,
-        loader:redirectIfLoggedInLoader,
+        loader: redirectIfLoggedInLoader,
     },
     {
-        path:"/loading",
+        path: "/loading",
         Component: LoadingScreen,
     },
     {
@@ -45,44 +46,50 @@ export const router = createBrowserRouter([
                 Component: AdminDashboard,
                 loader: () => roleLoader(['admin', 'superAdmin']),
                 HydrateFallback: LoadingScreen,
-                children:[
+                children: [
                     {
-                        index:true,
-                        loader:()=>{
+                        index: true,
+                        loader: () => {
                             return redirect('/dashboard/admin/all-products')
                         },
                         HydrateFallback: LoadingScreen
                     },
                     {
-                        path:'all-products',
+                        path: 'all-products',
                         loader: () => roleLoader(['admin', 'superAdmin']),
-                        Component:AllProducts
+                        Component: AllProducts,
                     },
                     {
-                        path:'add-product',
+                        path: "all-products/:id",
                         loader: () => roleLoader(['admin', 'superAdmin']),
-                        Component:AddProduct,
+                        HydrateFallback: LoadingScreen,
+                        Component: GetSingleProduct,
+                    },
+                    {
+                        path: 'add-product',
+                        loader: () => roleLoader(['admin', 'superAdmin']),
+                        Component: AddProduct,
                         HydrateFallback: LoadingScreen
                     },
                     {
-                        path:'update-product',
+                        path: 'update-product',
                         loader: () => roleLoader(['admin', 'superAdmin']),
-                        Component:UpdateProduct
+                        Component: UpdateProduct
                     },
                     {
-                        path:'delete-product',
+                        path: 'delete-product',
                         loader: () => roleLoader(['admin', 'superAdmin']),
-                        Component:DeleteProduct
+                        Component: DeleteProduct
                     },
                     {
-                        path:'manage-users',
+                        path: 'manage-users',
                         loader: () => roleLoader(['admin', 'superAdmin']),
-                        Component:ManageUsers
+                        Component: ManageUsers
                     },
                     {
-                        path:'manage-orders',
+                        path: 'manage-orders',
                         loader: () => roleLoader(['admin', 'superAdmin']),
-                        Component:ManageOrders
+                        Component: ManageOrders
                     }
                 ]
             },

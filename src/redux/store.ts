@@ -12,18 +12,26 @@ import {
 import authReducer from "./features/auth/authSlice"
 import storage from 'redux-persist/lib/storage';
 import { baseApi } from './api/baseApi';
-
-const persistConfig = {
+import productReducer from './features/products/productSlice';
+// persist config for auth
+const authPersistConfig = {
   key: 'auth',
   storage,
 };
+// Persist config for products
+const productPersistConfig = {
+  key: 'product',
+  storage,
+};
 
-const persistedAuthReducer = persistReducer(persistConfig, authReducer);
+const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
+const persistedProductReducer = persistReducer(productPersistConfig, productReducer);
 
 export const store = configureStore({
   reducer: {
     [baseApi.reducerPath]: baseApi.reducer,
     auth: persistedAuthReducer,
+    product: persistedProductReducer,
   },
   middleware: (getDefaultMiddlewares) =>
     getDefaultMiddlewares({

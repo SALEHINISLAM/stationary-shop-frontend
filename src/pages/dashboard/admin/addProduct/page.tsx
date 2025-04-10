@@ -30,9 +30,9 @@ const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   photo: z.string().url("Invalid URL").min(1, "Photo URL is required"),
   brand: z.string().min(1, "Brand is required"),
-  price: z.number().positive("Price must be positive"),
+  price: z.number().min(0, "Price must be positive"),
   category: z.enum(["Writing" , "Office Supplies" , "Art Supplies" , "Educational" , "Technology"]),
-  description: z.string().min(1, "Description is required").trim(),
+  description: z.string().min(10, "Description is required").trim(),
   quantity: z
     .number()
     .min(0, "Quantity must be positive")
@@ -78,6 +78,9 @@ export default function AddProduct() {
         quantity:Number(data.quantity),
         inStock:Boolean(data.inStock),
       }
+      if (Number(data.quantity)>0) {
+        productData.inStock = true;   
+      }
       const result = await addProduct(productData).unwrap();
       console.log(result);
       if (result.success as boolean) {
@@ -99,6 +102,7 @@ export default function AddProduct() {
 
   return (
     <div className="container mx-auto">
+      <h1 className="font-bold text-3xl text-center">Add New Product</h1>
       <Box
         component={"form"}
         sx={{
