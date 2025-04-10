@@ -1,1 +1,1 @@
-export const catagories=["Writing" , "Office Supplies" , "Art Supplies" , "Educational" , "Technology"]
+export const catagories=["Writing" , "Office Supplies" , "Art Supplies" , "Educational" , "Technology"] as const

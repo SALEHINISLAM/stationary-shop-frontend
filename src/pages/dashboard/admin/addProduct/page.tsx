@@ -22,14 +22,17 @@ import { catagories } from "./components/categories";
 import { z } from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAddProductMutation } from "../../../../redux/features/products/productApis";
+import { toast } from "sonner";
+import { TErrorResponse } from "../../../../types/errorTypes";
 
 const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   photo: z.string().url("Invalid URL").min(1, "Photo URL is required"),
   brand: z.string().min(1, "Brand is required"),
   price: z.number().positive("Price must be positive"),
-  category: z.string().min(1, "Category is required"),
-  description: z.string().optional(),
+  category: z.enum(["Writing" , "Office Supplies" , "Art Supplies" , "Educational" , "Technology"]),
+  description: z.string().min(1, "Description is required").trim(),
   quantity: z
     .number()
     .min(0, "Quantity must be positive")
@@ -52,16 +55,48 @@ export default function AddProduct() {
       photo: "",
       brand: "",
       price: 0,
-      category: "",
+      category: "Writing",
       description: "",
       quantity: 0,
       inStock: true,
     },
   });
-  const onSubmit = (data: ProductFormData) => {
+
+  const [addProduct, { isLoading }] = useAddProductMutation();
+
+  const onSubmit = async (data: ProductFormData) => {
+    const toastId = toast.loading("Adding product...");
     console.log(data);
-    // Handle form submission here
+    try {
+      const productData={
+        name:data.name,
+        photo:data.photo,
+        brand:data.brand,
+        price:Number(data.price),
+        category:data.category,
+        description:data.description,
+        quantity:Number(data.quantity),
+        inStock:Boolean(data.inStock),
+      }
+      const result = await addProduct(productData).unwrap();
+      console.log(result);
+      if (result.success as boolean) {
+        toast.success(result.message || "Product added successfully!", {
+          id: toastId,
+        });
+      }
+      else {
+        toast.error(result.data.message || "Failed to add product", {
+          id: toastId,
+        });
+      }
+    } catch (error) {
+      const apiError = error as TErrorResponse;
+      console.log(error);
+      toast.error(apiError.message||"Failed to add product", { id: toastId });
+    }
   };
+
   return (
     <div className="container mx-auto">
       <Box
@@ -145,12 +180,13 @@ export default function AddProduct() {
             <Controller
               name="category"
               control={control}
-              render={({ field }) => (
+              defaultValue="Writing"
+              render={({ field:{onChange,value,...restField} }) => (
                 <Autocomplete
-                  {...field}
                   options={catagories}
                   sx={{ width: "100%" }}
-                  onChange={(_, data) => field.onChange(data)}
+                  value={value || "Writing"}
+                  onChange={(_, data) => onChange(data)}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -162,6 +198,7 @@ export default function AddProduct() {
                       required
                     />
                   )}
+                  {...restField}
                 />
               )}
             />
@@ -237,8 +274,9 @@ export default function AddProduct() {
           type="submit"
           variant="outlined"
           sx={{ mt: 3, width: "100%", maxWidth: "30ch" }}
+          disabled={isLoading}
         >
-          Submit
+          {isLoading ? "Adding..." : "Add Product"}
         </Button>
       </Box>
     </div>

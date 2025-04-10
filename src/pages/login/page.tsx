@@ -49,7 +49,7 @@ const Login = () => {
         console.log(decodeUser);
         dispatch(setUser({token, user:decodeUser}))
         //save to redux
-        toast.success("Logged in successfully!", { 
+        toast.success(res.message||"Logged in successfully!", { 
           id: toastId,
           icon: <ThumbUpIcon />,
           duration: 1000,

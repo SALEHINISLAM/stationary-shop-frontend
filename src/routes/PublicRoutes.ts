@@ -50,7 +50,8 @@ export const router = createBrowserRouter([
                         index:true,
                         loader:()=>{
                             return redirect('/dashboard/admin/all-products')
-                        }
+                        },
+                        HydrateFallback: LoadingScreen
                     },
                     {
                         path:'all-products',
@@ -60,7 +61,8 @@ export const router = createBrowserRouter([
                     {
                         path:'add-product',
                         loader: () => roleLoader(['admin', 'superAdmin']),
-                        Component:AddProduct
+                        Component:AddProduct,
+                        HydrateFallback: LoadingScreen
                     },
                     {
                         path:'update-product',
